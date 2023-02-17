@@ -1,0 +1,87 @@
+//import logo from './logo.svg';
+import React, { useEffect, useState, useRef } from "react";
+import './App.css';
+import DummySection from "./components/dummy";
+import HeatingData from "./components/heating-data";
+
+let counter = 0
+
+const Lister = ( arr ) => {
+  counter ++
+  console.log(counter)
+  console.log(arr)
+  //if (arr.profile.times)
+  {
+    try {
+      const rlist = arr?.profile?.times?.map(x => x.id)
+      if (rlist) {
+        return rlist?.map((x) =>
+          <li>{x}</li>
+        )
+      }
+      else {
+        return (
+          <>
+        <h2>Problem reading the list?</h2>
+        <p>{typeof(arr.profile)}</p>
+        <p>{JSON.stringify(arr)}</p>
+        <p>{typeof(arr)}</p>
+
+        </>
+        ) 
+      }
+    }
+    catch(err) {
+      console.log("Error: " + err);
+    }
+  }
+
+}
+
+
+function App() {
+  const dataFetchedRef = useRef(false);
+  const [profile, setProfile] = useState({current:{boost:"test",profile_id:1,override_on:false,id:1,override_off:false},profile:{day_temp:20.5,night_temp:16.0,name:"test1",id:1,times:[{id:3,profile_id:1,start_time:"2023-02-13 12:00:00+00:00",end_time:"2023-02-13 13:30:00+00:00"},{id:4,profile_id:1,start_time:"2023-02-13 17:00:00+00:00",end_time:"2023-02-13 18:30:00+00:00"}]}});
+  
+  const fetchData = async () => {
+    let r = await fetch("http://localhost:8000")
+    .then((response) => response.json())
+    .then((data) => setProfile(data));
+    //console.log(r)
+    return r
+  }
+
+  useEffect(() => {
+    fetchData();
+  },[])
+
+
+
+
+
+  return (
+    <main>
+      <h1>User List</h1>
+      { profile.profile ? 
+          JSON.stringify(profile.profile.times):
+          'Nothing'
+      }
+
+      <DummySection/>
+      <ul>
+      {profile.profile ?
+        
+        
+          <Lister arr = {profile}/>
+        :
+        <li>No items found!</li>
+      }
+        </ul>
+        <button onClick={fetchData}>Refresh</button>
+      
+    </main>
+  );
+}
+//<HeatingData/>
+
+export default App;
