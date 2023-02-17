@@ -179,3 +179,5 @@ def add_times(times: TimesAdd):
         s.add(t)
         s.commit()
     return f'Successfully added time range {index}'
+
+    #testing gitignore
