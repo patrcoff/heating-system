@@ -20,6 +20,8 @@ def session():
     finally:
         db_session.close()
 
+#this is to create default 'current' data for deb purposes when db has been deleted and rebuilt
+#it simply stops errors from using other endpoints below which make use of getting the current data as part of their operation
 with session() as s:
     if not s.query(Current).get(1):
         #session = Session(bind=engine, expire_on_commit=False)
@@ -73,7 +75,7 @@ def get_all():
         response = {}
         response['current'] = (current := s.query(Current).get(1))
         response['profile'] = (profile := s.query(Profile).get(current.profile_id))
-        profile.times  # relationships need 'called' to populate (not sure on terminology there)
+        profile.times  # relationships need 'called' to populate (not sure on terminology there) - there may be an auto-populate setting or something I missed in the model?
     return response
 
 @app.get('/current')
@@ -83,7 +85,11 @@ def get_current():
         response['current'] = (current := s.query(Current).get(1))
     return response
 
-@app.put('/current/profile/{id}')
+@app.put('/current')
+def edit_current(override_on: bool, override_off: bool, profile_id: int, boost: datetime):
+    ...  # is this actually needed at this point? boost is handled external to this...
+
+@app.put('/current/profile/{id}')  #set the current profile (i.e. selected/active profile etc) by id
 def update_current_profile(id: int):
     with session() as s:
         current_profile = s.query(Current).get(1)
@@ -155,7 +161,33 @@ def set_settings(profile: ProfileUpdate, id: int):
 
 @app.post("/boost")
 def toggle_boost():
-    ...
+    """Increase the boost time by 30 minutes up to 2 hours away, otherwise set to past to reset"""
+    with session() as s:
+        #get current boost  time
+        current = s.query(Current).get(1)
+        boost_time = current.boost
+
+        if boost_time < datetime.now():
+            #if boost is in the past (are you from the past?)
+            boost_time = datetime.now() + timedelta(minutes=30)
+            
+        else:
+            #  is in the future or present
+            boost_time = boost_time + timedelta(minutes=30)
+            if boost_time > (datetime.now() + timedelta(minutes=120)):  # if boost is now over 2 hours away, reset to past
+                boost_time = datetime.now() + timedelta(minutes=-20)
+        current.boost = boost_time
+        s.add(current)
+        s.commit()
+
+    return boost_time
+
+
+    #if time in past, add 30 mins from datetime.now()
+    #else, just add 30 mins
+
+    #if new time > 2hrs in future, set to a minute ago
+
     #here we want to check the current boost value and if it is in future, add 30 mins, if in past, add 30 mins from now
 
 @app.get('/times/{id}')
