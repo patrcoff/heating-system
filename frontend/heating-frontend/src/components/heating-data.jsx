@@ -193,12 +193,12 @@ const CurrentTimes = () => {
 
     return (
 
-        <div className="justify-evenly">
+        <div className="justify-center border-red-600 border-2 mx-8">
             <div className = "">
-            <h2 className="text-red-500 text-3xl">Heating Data</h2>
+            <h2 className="text-red-500 text-3xl mx-8">Heating Controls</h2>
             <br></br>
             </div>
-            <div className="">
+            <div className="mx-8">
             <p>Profile: {JSON.stringify(CurrentData.profile.name)}</p>
             <br></br>
             <button onClick = {toggleBoost} className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
@@ -236,6 +236,7 @@ const CurrentTimes = () => {
             </button>
             <br></br>
             </div>
+            <div className='mx-8'>
             <p className = "">Times:</p>
             <ul className="">
                 {CurrentData.profile.times.sort((a,b) => (a.start_time > b.start_time) ? 1 :(a.start_time < b.start_time) ? -1 : 0).map(x => 
@@ -249,13 +250,14 @@ const CurrentTimes = () => {
                     </li>)
                 }
                   </ul>
-            <br></br>
+            </div>
             <br></br>
 
+            <div className='mx-8'>
             <h2>Profiles: </h2>
             <br></br>
             <ul className="flex">{Profiles.map(x => <li key={x.id}><ProfileButton x={x}/> </li>)}</ul>
-
+            </div>
             {/*The above only works because we provided a default data when declaring with useState
             Otherwise, when the render occurs before data (as is my current understanding) map is attempted on an undefined type
             the JSON.stringify() calls were not failing in this way as that function can take undefined as an argument, 

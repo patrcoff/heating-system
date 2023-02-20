@@ -10,13 +10,15 @@ import Footer from "./components/Footer"
 function App() {
   return(
     <>
-    <div className="bg-gray-200 flex justify-center">
+    <>
+    <div className="bg-gray-200 flex justify-center ">
       <CurrentTimes className=""/>
+    </div>
 
-      <Footer className="flex"/>
+    <Footer className=""/>
       
       {/*<ExternalJSON/>*/}
-    </div>
+    </>
 
     </>
   )
