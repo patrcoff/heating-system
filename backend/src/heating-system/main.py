@@ -32,15 +32,20 @@ with session() as s:
         s.commit()
 
 
-class ProfileJSON(BaseModel):
+class ProfileJSON(BaseModel):  #where properties are required
     name: str
     day_temp: float
     night_temp: float
 
-class ProfileUpdate(BaseModel):
+class ProfileUpdate(BaseModel):  # where properties are optional (for updating)
     name: str | None = None
     day_temp: float | None = None
     night_temp: float | None = None
+
+class TimesUpdate(BaseModel):
+    profile_id: int | None = None
+    start_time: time | None = None
+    end_time: time | None = None
 
 class TimesAdd(BaseModel):
     profile_id: int
@@ -86,8 +91,24 @@ def get_current():
     return response
 
 @app.put('/current')
-def edit_current(override_on: bool, override_off: bool, profile_id: int, boost: datetime):
-    ...  # is this actually needed at this point? boost is handled external to this...
+def edit_current(override_on: bool | None = None, override_off: bool  | None = None, profile_id: int  | None = None, boost: datetime | None = None):
+    with session() as s:
+        current = s.query(Current).get(1)
+        set_profile = profile_id
+        set_override_on = override_on
+        set_override_off = override_off
+        set_boost = boost
+
+        if set_profile:
+            current.profile_id = profile_id
+        if set_override_on:
+            current.override_on = override_on
+        if set_override_off:
+            current.override_off = override_off
+        if set_boost:
+            current.boost = boost
+        s.add(current)
+        s.commit()
 
 @app.put('/current/profile/{id}')  #set the current profile (i.e. selected/active profile etc) by id
 def update_current_profile(id: int):
@@ -136,7 +157,7 @@ def get_profile(profile_id: int):
             ...
     return response
 
-@app.post('/profile/')
+@app.post('/profile/new')
 def create_profile(profile: ProfileJSON):
     with session() as s:
         prof = Profile(name=profile.name, day_temp=profile.day_temp,night_temp=profile.night_temp)
@@ -199,7 +220,7 @@ def get_times(id: int):
 
 @app.post('/times')
 def add_times(times: TimesAdd):
-    print(times)
+    #print(times)
     with session() as s:
         existing_times = s.query(Time).filter(Time.profile_id == times.profile_id)
         index = len(list(existing_times))
@@ -211,5 +232,22 @@ def add_times(times: TimesAdd):
         s.add(t)
         s.commit()
     return f'Successfully added time range {index}'
+
+@app.put('/times/{id}')
+def add_times(id: int, times_data : TimesUpdate):  # we are intentionally leaving out profile id as a time record shouldn't be moved between profiles
+
+    with session() as s:
+        selected_time = s.query(Time).get(id)
+        
+        if times_data.start_time:
+            selected_time.start_time = times_data.start_time
+            #print(times_data.start_time)
+        if times_data.end_time:
+            selected_time.end_time = times_data.end_time
+            #print(times_data.end_time)
+        #print(selected_time.start_time, selected_time.end_time)
+        s.add(selected_time)
+        s.commit()
+    return f'Successfully added time range {id}'
 
     #testing gitignore
