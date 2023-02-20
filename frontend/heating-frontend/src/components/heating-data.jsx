@@ -7,7 +7,7 @@ import React, {useEffect, useState} from 'react'
 
 //need to rename this as this is now bigger than just the times (in fact we're yet to fully implement current times lol)
 const CurrentTimes = () => {
-    const [CurrentData, setData] = useState({current:{boost:"example"},profile:{times:[{id:1,current_time:'no time Toulouse'}]}});
+    const [CurrentData, setData] = useState({current:{boost:"2023-02-20T14:03:27.054272"},profile:{times:[{id:1,current_time:'no time Toulouse'}]}});
     //const [CurrentProfile, setProfile] = useState([])
     //const [CurrentBoost, setBoost] = useState([])
     const [Profiles, setProfiles] = useState([])
@@ -208,7 +208,7 @@ const CurrentTimes = () => {
             </button>
             <hr/>
             <hr/>
-            <p className={Date.parse(CurrentData.current.boost) < Date.now() ? "text-red-500" : "text-green-500"}>Boost: {JSON.stringify(CurrentData.current.boost)}</p>
+            <p className={Date.parse(CurrentData.current.boost) < Date.now() ? "hidden" : "text-green-500"}>Boost until: {JSON.stringify(CurrentData.current.boost.split("T")[1].split(".")[0].slice(0,5))}</p>
 
             <br></br>
 
