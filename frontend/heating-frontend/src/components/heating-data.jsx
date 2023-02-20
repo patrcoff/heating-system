@@ -242,9 +242,9 @@ const CurrentTimes = () => {
                 {CurrentData.profile.times.sort((a,b) => (a.start_time > b.start_time) ? 1 :(a.start_time < b.start_time) ? -1 : 0).map(x => 
                     <li key={x.id}>
                         <br></br>
-                        {x.start_time}  <TimeInput x={x} time_type={"start"}/>
+                        {x.start_time ? x.start_time.slice(0,5) : 'loading'}  <TimeInput x={x} time_type={"start"}/>
                         <p>until</p>
-                        {x.end_time}  <TimeInput x={x} time_type={"end"}/>
+                        {x.end_time ? x.end_time.slice(0,5) : 'loading'}  <TimeInput x={x} time_type={"end"}/>
                         <br></br>
                         
                     </li>)
