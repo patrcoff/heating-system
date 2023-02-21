@@ -6,10 +6,12 @@ served by the backend to make deployment one line "uvicorn main:app --reload --h
 (or two lines for changing directory first in the daemon bash script)
 
 When deploying, if not using the default fastapi port (8000), you must edit the uri references
-within the frontend code
+within the frontend code. If the IP changes (who's running my very specific project running on
+one rpi where the IP is not going to change?) then the IP/address will also need edited here. 
 
-In heating-data.jsx - the API calls need the port changed
-In package.json, the home path also needs the port specifed (this handles relative routing)
+The correct address and port info is needed in the following files:
+frontend/heating-frontend/src/components/heating-data.jsx
+frontend/heating-frontend/package.json
 
 This could be handled with environment varibales but as there are only two places to make
 the change and this project is not likely to grow, it would be overkill for my purposes as
@@ -20,3 +22,21 @@ forever, become a massive codebase and require regular, painful maintenance for 
 of my life - lol)
 
 https://xkcd.com/2730
+
+With the above stated, the basic process for deployment is:
+
+-git clone repo (containing both frontend and backend)
+-cd into frontend/heating-frontend
+-edit the files mentioned above with the correct ports and IP/address
+-npm install package.json
+-npm run build
+
+#---------------------------------------------------------------
+
+creat a venv in the root dir
+activate venv
+pip install requirements in requirements.txt
+
+create a simple bash script which, activates the venv, and runs:
+
+"uvicorn main:app --reload --host 0.0.0.0" - or a variation of this for your desired port etc

@@ -1,9 +1,8 @@
 import React, {useEffect, useState} from 'react'
 
-
-
-
-
+const server = "http://192.168.1.177"
+const port = "8000"
+const baseurl = server + ":" + port
 
 //need to rename this as this is now bigger than just the times (in fact we're yet to fully implement current times lol)
 const CurrentTimes = () => {
@@ -13,20 +12,20 @@ const CurrentTimes = () => {
     const [Profiles, setProfiles] = useState([])
     
     function refreshData() {
-        fetch("http://192.168.1.177:8000/api/current")
+        fetch(baseurl + "/api/current")
             .then((response) => response.json())
             .then((data) => {setData(data)});
     }
 
     function refreshProfiles() {
-        fetch("http://192.168.1.177:8000/api/profiles")
+        fetch(baseurl + "/api/profiles")
             .then((response) => response.json())
             .then((data) => {setProfiles(data.profiles);});        
     }
 
     async function toggleBoost() {
         //set the currently selected heating controller profile of the API where x is the profile id
-        let address = "http://192.168.1.177:8000/api/boost"
+        let address = baseurl + "/api/boost"
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -70,7 +69,8 @@ const CurrentTimes = () => {
     async function increaseDayTemp(x,direction,day) {
         //set the currently selected heating controller profile of the API where x is the profile id
         //where direction is -1 for decrease, 1 for increase, and day is -1 for night_temp and 1 for day_temp
-        let address = "http://192.168.1.177:8000/api/profile/" + x.current.profile_id.toString()
+
+        let address = baseurl + "/api/profile/" + x.current.profile_id.toString()
         let temp
         let data
         if (day > 0) {
@@ -108,7 +108,7 @@ const CurrentTimes = () => {
 
     async function setCurrentProfile(x) {
         //set the currently selected heating controller profile of the API where x is the profile id
-        let address = "http://192.168.1.177:8000/api/current/profile/" + x.toString()
+        let address = baseurl + "/api/current/profile/" + x.toString()
         const requestOptions = {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -129,7 +129,7 @@ const CurrentTimes = () => {
 
     async function setTimeRange(i,time, type) {
         //set the currently selected heating controller profile of the API where x is the profile id
-        let address = "http://192.168.1.177:8000/api/times/" + i.toString()
+        let address = baseurl + "/api/times/" + i.toString()
         //console.log(address)
         let data
         if (type == "start") {
