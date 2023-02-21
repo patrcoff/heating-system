@@ -1,0 +1,22 @@
+This application is segmented in frontend/backend, where the frontend is a react application 
+and the backend is a FastAPI one.
+
+As FastAPI can serve static files, and the frontent is a single page app, the frontent can be
+served by the backend to make deployment one line "uvicorn main:app --reload --host 0.0.0.0"
+(or two lines for changing directory first in the daemon bash script)
+
+When deploying, if not using the default fastapi port (8000), you must edit the uri references
+within the frontend code
+
+In heating-data.jsx - the API calls need the port changed
+In package.json, the home path also needs the port specifed (this handles relative routing)
+
+This could be handled with environment varibales but as there are only two places to make
+the change and this project is not likely to grow, it would be overkill for my purposes as
+of now.
+
+(with the above statement I have just guaranteed that this software will be in production
+forever, become a massive codebase and require regular, painful maintenance for the rest
+of my life - lol)
+
+https://xkcd.com/2730
