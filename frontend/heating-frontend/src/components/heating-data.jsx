@@ -1,5 +1,13 @@
 import React, {useEffect, useState} from 'react'
 
+import {
+    BrowserView,
+    MobileView,
+    isBrowser,
+    isMobile
+  } from "react-device-detect";
+
+
 const server = "http://192.168.1.177"
 const port = "8000"
 const baseurl = server + ":" + port
@@ -181,10 +189,25 @@ const CurrentTimes = () => {
             //console.log(time_type)
             setTimeRange(x,e.target.value,time_type)
           }
-        };        
+        };    
+
+    const handleMobileChange = (x,time_type,e) => {
+        
+            //setUpdated(event.target.value);
+            //console.log(e.target.value)
+            //console.log(x)
+            //console.log(time_type)
+        setTimeRange(x,e.target.value,time_type)
+            
+        };    
     
     const TimeInput = ({x,time_type}) => {
-        return (<input type="time"  onKeyDown =  {(e) => handleKeyDown(x.id,time_type,e)}></input>)    
+        if (!isMobile) { 
+            return (<input type="time"  onKeyDown =  {(e) => handleKeyDown(x.id,time_type,e)}></input>)
+        }
+        else if (isMobile) {
+            return (<input type="time"  onChange =  {(e) => handleMobileChange(x.id,time_type,e)}></input>)
+        }
     }
 
 //function for profile select button

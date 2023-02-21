@@ -53,6 +53,11 @@ class TimesAdd(BaseModel):
     start_time: time
     end_time: time
 
+class LogJSON(BaseModel):
+    source_id: str
+    temperature: float
+    burner: bool
+
 #we do not need a current class, we will only ever update the first current record, with the id of the profile we wish to update
 #this could either be done via a query of the profile.name or directly with the profile id...
 
@@ -255,3 +260,20 @@ def add_times(id: int, times_data : TimesUpdate):  # we are intentionally leavin
     return f'Successfully added time range {id}'
 
     #testing gitignore
+
+@app.get('/api/log')
+def get_logs():
+    with session() as s:
+        response = s.query(Log).filter(Log.timestamp > (datetime.now() + timedelta(hours=-24))).all()
+    return response
+
+@app.post('/api/log')
+def post_log(log: LogJSON):
+    with session() as s:
+        logger = Log(source_id = log.source_id,
+                    temperature = log.temperature,
+                    burner = log.burner
+                )
+        s.add(logger)
+        s.commit()
+    return logger
