@@ -21,16 +21,17 @@ def session():
     finally:
         db_session.close()
 
-#this is to create default 'current' data for deb purposes when db has been deleted and rebuilt
+#this was to create default 'current' data for dev purposes when db has been deleted and rebuilt
 #it simply stops errors from using other endpoints below which make use of getting the current data as part of their operation
-with session() as s:
-    if not s.query(Current).get(1):
-        #session = Session(bind=engine, expire_on_commit=False)
-        #p1 = Profile(name='test1',day_temp=20.5,night_temp=16.0)
-        #s.add(p1)
-        cur1 = Current(profile_id=1,boost=datetime.now(),override_on=False,override_off=False)
-        s.add(cur1)
-        s.commit()
+#it has been moved to setup_db.py
+#with session() as s:
+#    if not s.query(Current).get(1):
+#        #session = Session(bind=engine, expire_on_commit=False)
+#        #p1 = Profile(name='test1',day_temp=20.5,night_temp=16.0)
+#        #s.add(p1)
+#        cur1 = Current(profile_id=1,boost=datetime.now(),override_on=False,override_off=False)
+#        s.add(cur1)
+#        s.commit()
 
 
 class ProfileJSON(BaseModel):  #where properties are required
@@ -58,7 +59,7 @@ class LogJSON(BaseModel):
     temperature: float
     burner: bool
 
-#we do not need a current class, we will only ever update the first current record, with the id of the profile we wish to update
+#we do not need a 'current' class, we will only ever update the first current record, with the id of the profile we wish to update
 #this could either be done via a query of the profile.name or directly with the profile id...
 
 app = FastAPI()
@@ -79,8 +80,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-#print(Path('.').absolute())
-#app.mount('/static', StaticFiles(directory='static'), name='controls')
+
 app.mount('/controls', StaticFiles(directory='../../../frontend/heating-frontend/build/'))
 
 @app.get('/api/current')
@@ -92,49 +92,38 @@ def get_all():
         profile.times  # relationships need 'called' to populate (not sure on terminology there) - there may be an auto-populate setting or something I missed in the model?
     return response
 
-#@app.get('/current')
-#def get_current():
-#    with session() as s:
-#        response = {}
-#        response['current'] = (current := s.query(Current).get(1))
-#    return response
-
 @app.put('/api/current')
-def edit_current(override_on: bool | None = None, override_off: bool  | None = None, profile_id: int  | None = None, boost: datetime | None = None):
+def edit_current_settings(override_on: bool | None = None, override_off: bool  | None = None, profile_id: int  | None = None, boost: datetime | None = None):
     with session() as s:
         current = s.query(Current).get(1)
-        set_profile = profile_id
-        set_override_on = override_on
-        set_override_off = override_off
-        set_boost = boost
 
-        if set_profile:
+        if profile_id:
             current.profile_id = profile_id
-        if set_override_on:
+        if override_on:
             current.override_on = override_on
-        if set_override_off:
+        if override_off:
             current.override_off = override_off
-        if set_boost:
+        if boost:
             current.boost = boost
         s.add(current)
         s.commit()
 
 @app.put('/api/current/profile/{id}')  #set the current profile (i.e. selected/active profile etc) by id
-def update_current_profile(id: int):
+def select_current_profile(id: int):
     with session() as s:
         current_profile = s.query(Current).get(1)
         current_profile.profile_id = id
         s.add(current_profile)
         s.commit()
 
-@app.get('/api/profile')  #  this is really kind of redundant as we have this info as part of '/'
-def get_current_profile():
-    with session() as s:
-        response = {}
-        current = s.query(Current).get(1)
-        response['profile'] = (profile := s.query(Profile).get(current.profile_id))
-        profile.times
-    return response
+#@app.get('/api/profile')  #  this is really kind of redundant as we have this info as part of '/current'
+#def get_current_profile():
+#    with session() as s:
+#        response = {}
+#        current = s.query(Current).get(1)
+#        response['profile'] = (profile := s.query(Profile).get(current.profile_id))
+#        profile.times
+#    return response
 
 #  I think that I want to refactor the profile(s) endpoints here
 #  ther should be only one /profile root endpoint 
@@ -145,7 +134,7 @@ def get_current_profile():
 #  /profile/x - interact with profile of id x
 #  the current profile will be obtained from the '/' endpoint (which may change to /current)
 
-@app.get('/api/profiles')
+@app.get('/api/profiles')  # This is to be changed to /api/profile and will still return all but might add optional query parameters
 def get_current_profile():
     with session() as s:
         response = {}
@@ -156,7 +145,7 @@ def get_current_profile():
     return response
 
 @app.get('/api/profile/{profile_id}')
-def get_profile(profile_id: int):
+def get_profile_x(profile_id: int):
 
     with session() as s:
         response = {}
@@ -175,7 +164,7 @@ def create_profile(profile: ProfileJSON):
     return f'created profile {profile.name}'
 
 @app.put("/api/profile/{id}")
-def set_settings(profile: ProfileUpdate, id: int):
+def edit_profile_settings(profile: ProfileUpdate, id: int):
     with session() as s:
         prof = s.query(Profile).get(id)
         if profile.name:
@@ -191,7 +180,7 @@ def set_settings(profile: ProfileUpdate, id: int):
 
 @app.post("/api/boost")
 def toggle_boost():
-    """Increase the boost time by 30 minutes up to 2 hours away, otherwise set to past to reset"""
+    """Increase the boost time by 30 minutes up to 2 hours, otherwise set to datetime in past to reset"""
     with session() as s:
         #get current boost  time
         current = s.query(Current).get(1)
@@ -211,14 +200,6 @@ def toggle_boost():
         s.commit()
 
     return boost_time
-
-
-    #if time in past, add 30 mins from datetime.now()
-    #else, just add 30 mins
-
-    #if new time > 2hrs in future, set to a minute ago
-
-    #here we want to check the current boost value and if it is in future, add 30 mins, if in past, add 30 mins from now
 
 @app.get('/api/times/{id}')
 def get_times(id: int):
