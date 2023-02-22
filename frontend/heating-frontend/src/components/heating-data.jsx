@@ -18,6 +18,15 @@ const CurrentTimes = () => {
     //const [CurrentProfile, setProfile] = useState([])
     //const [CurrentBoost, setBoost] = useState([])
     const [Profiles, setProfiles] = useState([])
+
+//    const [Logs, setLogs] = useState([])
+
+//    function refreshLogs() {
+//        fetch(baseurl + "/api/log")
+//        .then((response) => response.json())
+//        .then((data) => {setLogs(data)});
+//        console.log(Logs)
+//    }
     
     function refreshData() {
         fetch(baseurl + "/api/current")
@@ -72,6 +81,7 @@ const CurrentTimes = () => {
     useEffect(() => {
         refreshData()
         refreshProfiles()
+        //refreshLogs()
     },[])
 
     async function increaseDayTemp(x,direction,day) {
@@ -108,11 +118,11 @@ const CurrentTimes = () => {
         //console.log(typeof(x))
         //console.log(x)
     }
-
-    useEffect(() => {
-        refreshData()
-        refreshProfiles()
-    },[])
+// WHY DO WE HAVE THIS TWICE..?
+//    useEffect(() => {
+ //       refreshData()
+  //      refreshProfiles()
+   // },[])
 
     async function setCurrentProfile(x) {
         //set the currently selected heating controller profile of the API where x is the profile id
@@ -215,78 +225,79 @@ const CurrentTimes = () => {
 //refresh heating data section (not the profiles section)
 
     return (
+        <>
+            <div className="justify-center border-red-600 border-2 mx-8">
+                <div className = "">
+                <h2 className="text-red-500 text-3xl mx-8">Heating Controls</h2>
+                <br></br>
+                </div>
+                <div className="mx-8">
+                <p>Profile: {JSON.stringify(CurrentData.profile.name)}</p>
+                <br></br>
+                <button onClick = {toggleBoost} className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
+                    <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+                        BOOST
+                    </span>
+                </button>
+                <hr/>
+                <hr/>
+                <p className={Date.parse(CurrentData.current.boost) < Date.now() ? "hidden" : "text-green-500"}>Boost until: {JSON.stringify(CurrentData.current.boost.split("T")[1].split(".")[0].slice(0,5))}</p>
 
-        <div className="justify-center border-red-600 border-2 mx-8">
-            <div className = "">
-            <h2 className="text-red-500 text-3xl mx-8">Heating Controls</h2>
-            <br></br>
+                <br></br>
+
+                <p>Day Temp: {JSON.stringify(CurrentData.profile.day_temp)}</p> 
+                <button onClick = {() => increaseDayTemp(CurrentData,-1,1)} className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
+                    <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+                        -
+                    </span>
+                </button>
+                <button onClick = {() => increaseDayTemp(CurrentData,1,1)} className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
+                    <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+                        +
+                    </span>
+                </button>
+                <p>Night Temp: {JSON.stringify(CurrentData.profile.night_temp)}</p>
+                <button onClick = {() => increaseDayTemp(CurrentData,-1,-1)} className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
+                    <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+                        -
+                    </span>
+                </button>
+                <button onClick = {() => increaseDayTemp(CurrentData,1,-1)} className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
+                    <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+                        +
+                    </span>
+                </button>
+                <br></br>
+                </div>
+                <div className='mx-8'>
+                <p className = "">Times:</p>
+                <ul className="">
+                    {CurrentData.profile.times.sort((a,b) => (a.start_time > b.start_time) ? 1 :(a.start_time < b.start_time) ? -1 : 0).map(x => 
+                        <li key={x.id}>
+                            <br></br>
+                            {x.start_time ? x.start_time.slice(0,5) : 'loading'}  <TimeInput x={x} time_type={"start"}/>
+                            <p>until</p>
+                            {x.end_time ? x.end_time.slice(0,5) : 'loading'}  <TimeInput x={x} time_type={"end"}/>
+                            <br></br>
+                            
+                        </li>)
+                    }
+                    </ul>
+                </div>
+                <br></br>
+
+                <div className='mx-8'>
+                <h2>Profiles: </h2>
+                <br></br>
+                <ul className="flex">{Profiles.map(x => <li key={x.id}><ProfileButton x={x}/> </li>)}</ul>
+                </div>
+                {/*The above only works because we provided a default data when declaring with useState
+                Otherwise, when the render occurs before data (as is my current understanding) map is attempted on an undefined type
+                the JSON.stringify() calls were not failing in this way as that function can take undefined as an argument, 
+                but map is a property of an array and the array must first exist...*/}
             </div>
-            <div className="mx-8">
-            <p>Profile: {JSON.stringify(CurrentData.profile.name)}</p>
-            <br></br>
-            <button onClick = {toggleBoost} className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
-                <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-                    BOOST
-                </span>
-            </button>
-            <hr/>
-            <hr/>
-            <p className={Date.parse(CurrentData.current.boost) < Date.now() ? "hidden" : "text-green-500"}>Boost until: {JSON.stringify(CurrentData.current.boost.split("T")[1].split(".")[0].slice(0,5))}</p>
 
-            <br></br>
-
-            <p>Day Temp: {JSON.stringify(CurrentData.profile.day_temp)}</p> 
-            <button onClick = {() => increaseDayTemp(CurrentData,-1,1)} className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
-                <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-                    -
-                </span>
-            </button>
-            <button onClick = {() => increaseDayTemp(CurrentData,1,1)} className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
-                <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-                    +
-                </span>
-            </button>
-            <p>Night Temp: {JSON.stringify(CurrentData.profile.night_temp)}</p>
-            <button onClick = {() => increaseDayTemp(CurrentData,-1,-1)} className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
-                <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-                    -
-                </span>
-            </button>
-            <button onClick = {() => increaseDayTemp(CurrentData,1,-1)} className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
-                <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-                    +
-                </span>
-            </button>
-            <br></br>
-            </div>
-            <div className='mx-8'>
-            <p className = "">Times:</p>
-            <ul className="">
-                {CurrentData.profile.times.sort((a,b) => (a.start_time > b.start_time) ? 1 :(a.start_time < b.start_time) ? -1 : 0).map(x => 
-                    <li key={x.id}>
-                        <br></br>
-                        {x.start_time ? x.start_time.slice(0,5) : 'loading'}  <TimeInput x={x} time_type={"start"}/>
-                        <p>until</p>
-                        {x.end_time ? x.end_time.slice(0,5) : 'loading'}  <TimeInput x={x} time_type={"end"}/>
-                        <br></br>
-                        
-                    </li>)
-                }
-                  </ul>
-            </div>
-            <br></br>
-
-            <div className='mx-8'>
-            <h2>Profiles: </h2>
-            <br></br>
-            <ul className="flex">{Profiles.map(x => <li key={x.id}><ProfileButton x={x}/> </li>)}</ul>
-            </div>
-            {/*The above only works because we provided a default data when declaring with useState
-            Otherwise, when the render occurs before data (as is my current understanding) map is attempted on an undefined type
-            the JSON.stringify() calls were not failing in this way as that function can take undefined as an argument, 
-            but map is a property of an array and the array must first exist...*/}
-        </div>
-
+        </>
     )
 }
 
